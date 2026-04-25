@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 
@@ -10,6 +11,13 @@ import (
 )
 
 func main() {
+	fs := flag.NewFlagSet("params", flag.ExitOnError)
+	projectId := fs.String("project", "", "Check API keys in the project identified by ProjectId")
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fmt.Printf("error parsing flags: %s\n", err.Error())
+		os.Exit(1)
+	}
+
 	ctx := context.Background()
 	c, err := apikeys.NewClient(ctx)
 	if err != nil {
@@ -20,7 +28,7 @@ func main() {
 
 	req := &apikeyspb.ListKeysRequest{
 		// See https://pkg.go.dev/cloud.google.com/go/apikeys/apiv2/apikeyspb#ListKeysRequest.
-		Parent: fmt.Sprintf("projects/%s/locations/global", os.Getenv("PROJECTID")),
+		Parent: fmt.Sprintf("projects/%s/locations/global", *projectId),
 	}
 	for k, err := range c.ListKeys(ctx, req).All() {
 		if err != nil {
