@@ -18,7 +18,8 @@ type Key struct {
 }
 
 func (k Key) String() string {
-	return fmt.Sprintf("%s on project %s (created: %s)", k.DisplayName, k.ProjectId, k.CreateTime.Format(time.RFC1123))
+	const hoursDay = 24
+	return fmt.Sprintf("%s on project %s (created: %s, %.0f days ago)", k.DisplayName, k.ProjectId, k.CreateTime.Format(time.RFC1123), time.Since(k.CreateTime).Hours()/hoursDay)
 }
 
 func List(projectid string) []*Key {
