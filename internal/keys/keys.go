@@ -22,7 +22,7 @@ func (k Key) String() string {
 	return fmt.Sprintf("%s on project %s (created: %s, %.0f days ago)", k.DisplayName, k.ProjectId, k.CreateTime.Format(time.RFC1123), time.Since(k.CreateTime).Hours()/hoursDay)
 }
 
-func Display(keylist []*Key) {
+func Display(keylist []*Key, options Options) {
 	for _, k := range keylist {
 		fmt.Println(k.String())
 	}
@@ -59,4 +59,8 @@ func List(projectid string) []*Key {
 	}
 
 	return keys
+}
+
+type Options struct {
+	MaxDays int
 }
