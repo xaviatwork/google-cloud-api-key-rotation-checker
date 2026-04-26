@@ -11,10 +11,15 @@ import (
 )
 
 func main() {
-	fs := flag.NewFlagSet("params", flag.ExitOnError)
+	fs := flag.NewFlagSet("apikeycheck", flag.ExitOnError)
 	projectId := fs.String("project", "", "Check API keys in the project identified by ProjectId")
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		fmt.Printf("error parsing flags: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	if *projectId == "" {
+		fmt.Println("projectId cannot be empty")
 		os.Exit(1)
 	}
 
