@@ -31,7 +31,5 @@ func main() {
 	}
 
 	// display API keys
-	for _, k := range keylist {
-		fmt.Println(k.String())
-	}
+	keys.Display(keylist)
 }
