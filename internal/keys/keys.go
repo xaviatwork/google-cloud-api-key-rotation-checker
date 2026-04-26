@@ -18,13 +18,32 @@ type Key struct {
 }
 
 func (k Key) String() string {
+	return fmt.Sprintf("%s on project %s (created: %s, %d days ago)", k.DisplayName, k.ProjectId, k.CreateTime.Format(time.RFC1123), daysSinceCreated(k.CreateTime))
+}
+
+func daysSinceCreated(c time.Time) int {
 	const hoursDay = 24
-	return fmt.Sprintf("%s on project %s (created: %s, %.0f days ago)", k.DisplayName, k.ProjectId, k.CreateTime.Format(time.RFC1123), time.Since(k.CreateTime).Hours()/hoursDay)
+	return int(time.Since(c).Hours() / hoursDay)
+}
+
+func (k Key) NeedsToBeRotated(options Options) bool {
+	if daysSinceCreated(k.CreateTime) <= options.MaxDays {
+		return false
+	}
+	return true
 }
 
 func Display(keylist []*Key, options Options) {
+	const (
+		warningIcon string = "⚠️"
+		okIcon      string = "✅"
+	)
+	icon := okIcon
 	for _, k := range keylist {
-		fmt.Println(k.String())
+		if k.NeedsToBeRotated(options) {
+			icon = warningIcon
+		}
+		fmt.Println(icon, k.String())
 	}
 }
 
