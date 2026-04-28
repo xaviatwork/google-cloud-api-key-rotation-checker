@@ -3,12 +3,19 @@ package keys
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
+	"regexp"
 	"time"
 
 	apikeys "cloud.google.com/go/apikeys/apiv2"
 	"cloud.google.com/go/apikeys/apiv2/apikeyspb"
 )
+
+type Options struct {
+	MaxDays int
+	Redact  bool
+}
 
 type Key struct {
 	CreateTime  time.Time `json:"create_time,omitempty"`
@@ -21,11 +28,6 @@ func (k Key) String() string {
 	return fmt.Sprintf("%s on project %s (created: %s, %d days ago)", k.DisplayName, k.ProjectId, k.CreateTime.Format(time.RFC1123), daysSinceCreated(k.CreateTime))
 }
 
-func daysSinceCreated(c time.Time) int {
-	const hoursDay = 24
-	return int(time.Since(c).Hours() / hoursDay)
-}
-
 func (k Key) NeedsToBeRotated(options Options) bool {
 	if daysSinceCreated(k.CreateTime) <= options.MaxDays {
 		return false
@@ -33,18 +35,17 @@ func (k Key) NeedsToBeRotated(options Options) bool {
 	return true
 }
 
-func Display(keylist []*Key, options Options) {
-	const (
-		warningIcon string = "⚠️"
-		okIcon      string = "✅"
-	)
-	icon := okIcon
-	for _, k := range keylist {
-		if k.NeedsToBeRotated(options) {
-			icon = warningIcon
-		}
-		fmt.Println(icon, k.String())
+func daysSinceCreated(c time.Time) int {
+	const hoursDay = 24
+	return int(time.Since(c).Hours() / hoursDay)
+}
+
+func redact(s string, restr string, mask string) string {
+	re, err := regexp.Compile(restr)
+	if err != nil {
+		log.Println("redact", err.Error())
 	}
+	return re.ReplaceAllString(s, mask)
 }
 
 func List(projectid string) []*Key {
@@ -80,6 +81,20 @@ func List(projectid string) []*Key {
 	return keys
 }
 
-type Options struct {
-	MaxDays int
+func Display(keylist []*Key, options Options) {
+	const (
+		warningIcon string = "⚠️"
+		okIcon      string = "✅"
+	)
+	icon := okIcon
+	for _, k := range keylist {
+		if k.NeedsToBeRotated(options) {
+			icon = warningIcon
+		}
+		// Redact as many fields as we want from the API Key
+		if options.Redact {
+			k.ProjectId = redact(k.ProjectId, "[a-zA-Z]", "░")
+		}
+		fmt.Println(icon, k.String())
+	}
 }
