@@ -1,7 +1,9 @@
 package keys
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -15,6 +17,7 @@ import (
 type Options struct {
 	MaxDays int
 	Redact  bool
+	Format  string
 }
 
 type Key struct {
@@ -86,15 +89,25 @@ func Display(keylist []*Key, options Options) {
 		warningIcon string = "⚠️"
 		okIcon      string = "✅"
 	)
-	icon := okIcon
-	for _, k := range keylist {
-		if k.NeedsToBeRotated(options) {
-			icon = warningIcon
+	switch options.Format {
+	case "json":
+		buf := new(bytes.Buffer)
+		if err := json.NewEncoder(buf).Encode(&keylist); err != nil {
+			log.Println("json encoding", err.Error())
+			os.Exit(1)
 		}
-		// Redact as many fields as we want from the API Key
-		if options.Redact {
-			k.ProjectId = redact(k.ProjectId, "[a-zA-Z]", "░")
+		fmt.Println(buf.String())
+	default:
+		icon := okIcon
+		for _, k := range keylist {
+			if k.NeedsToBeRotated(options) {
+				icon = warningIcon
+			}
+			// Redact as many fields as we want from the API Key
+			if options.Redact {
+				k.ProjectId = redact(k.ProjectId, "[a-zA-Z]", "░")
+			}
+			fmt.Println(icon, k.String())
 		}
-		fmt.Println(icon, k.String())
 	}
 }
