@@ -19,6 +19,7 @@ type Options struct {
 	MaxDays int
 	Redact  bool
 	Format  string
+	Rotate  bool
 }
 
 type Key struct {
@@ -26,6 +27,8 @@ type Key struct {
 	DisplayName string    `json:"display_name,omitempty"`
 	Name        string    `json:"name,omitempty"`
 	ProjectId   string    `json:"project_id,omitempty"`
+	AgeDays     int       `json:"age_days,omitempty"`
+	Rotate      bool      `json:"rotate,omitempty"`
 }
 
 func (k Key) String() string {
@@ -83,11 +86,27 @@ func List(projectid string) []*Key {
 			DisplayName: k.DisplayName,
 			CreateTime:  k.CreateTime.AsTime(),
 			ProjectId:   projectid,
+			AgeDays:     daysSinceCreated(k.CreateTime.AsTime()),
 		}
 		keys = append(keys, key)
 	}
 
 	return keys
+}
+
+func Filter(keylist []*Key, options Options) []*Key {
+	if !options.Rotate {
+		// nothing to filter
+		return keylist
+	}
+	filteredKeys := []*Key{}
+	for _, k := range keylist {
+		if k.NeedsToBeRotated(options) {
+			k.Rotate = true
+			filteredKeys = append(filteredKeys, k)
+		}
+	}
+	return filteredKeys
 }
 
 func Display(keylist []*Key, options Options) {
