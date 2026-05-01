@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/xaviatwork/api-key-checker/internal/keys"
+	"github.com/xaviatwork/api-key-checker/internal/projects"
 )
 
 func main() {
@@ -26,18 +27,27 @@ func main() {
 		Format:  strings.ToLower(*format),
 	}
 
-	if *projectId == "" {
-		fmt.Println("projectId cannot be empty")
-		os.Exit(1)
+	var projectList []string
+	if *projectId != "" {
+		projectList = []string{*projectId}
 	}
-
-	projectIds := []string{*projectId}
+	projectList = projects.Search()
 
 	// get API key list
 	var keylist []*keys.Key
-	for _, p := range projectIds {
+	numProjects := len(projectList)
+	i := 1
+	for _, p := range projectList {
+		fmt.Fprintf(os.Stderr, "🕵️‍♂️ [%d/%d] checking API keys on project %s ...", i, numProjects, p)
 		kk := keys.List(p)
+		if len(kk) == 0 {
+			fmt.Fprintf(os.Stderr, " found 0.\n")
+		} else {
+			fmt.Fprintf(os.Stderr, " found %d 🔑.\n", len(kk))
+		}
+
 		keylist = append(keylist, kk...)
+		i = i + 1
 	}
 
 	// display API keys
