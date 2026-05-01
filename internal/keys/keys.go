@@ -3,6 +3,7 @@ package keys
 import (
 	"bytes"
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -38,6 +39,10 @@ func (k Key) NeedsToBeRotated(options Options) bool {
 	return true
 }
 
+func (k Key) ToCSV(options Options) []string {
+	return []string{k.DisplayName, k.Name, k.CreateTime.Format(time.RFC1123), k.ProjectId}
+}
+
 func daysSinceCreated(c time.Time) int {
 	const hoursDay = 24
 	return int(time.Since(c).Hours() / hoursDay)
@@ -70,7 +75,8 @@ func List(projectid string) []*Key {
 		if err != nil {
 			// TODO: Handle error and break/return/continue. Iteration will stop after any error.
 			fmt.Printf("list keys error: %s\n", err.Error())
-			os.Exit(1)
+			continue
+			// os.Exit(1)
 		}
 		key := &Key{
 			Name:        k.Name,
@@ -90,6 +96,13 @@ func Display(keylist []*Key, options Options) {
 		okIcon      string = "✅"
 	)
 	switch options.Format {
+	case "csv":
+		output := os.Stdout
+		w := csv.NewWriter(output)
+		for _, k := range keylist {
+			w.Write(k.ToCSV(options))
+		}
+		w.Flush()
 	case "json":
 		buf := new(bytes.Buffer)
 		if err := json.NewEncoder(buf).Encode(&keylist); err != nil {
