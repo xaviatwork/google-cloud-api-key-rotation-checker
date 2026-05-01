@@ -2,6 +2,15 @@
 
 This repository contains a Go version of the [API Key Rotation Checker](https://github.com/GoogleCloudPlatform/professional-services/tree/main/tools/api-key-rotation/api_key_rotation_checker) solution developed by [Google Cloud Professional Services](https://github.com/GoogleCloudPlatform/professional-services/tree/main).
 
+This application will crawl your entire Google Cloud Organization (where you have permissions) and inform you of any API keys over 90 days that need to be rotated (as well as any < 90 days).
+
+## Prerequisites (from the original repository)
+
+- The Cloud Resource Manager service enabled on your Google Cloud project
+- The following permissions (at a minimum):
+  - `resourcemanager.projects.list`
+  - `apikeys.keys.list`
+
 The Go version of the *API key rotation checker* adds the following features:
 
 - check for API keys in all projects the user has access to (default) or just the project specified by `--project`.
@@ -17,7 +26,11 @@ To interact with Google Cloud, *API key rotation checker* will try to locate loc
 Login to Google Cloud using `gcloud`:
 
 ```console
+# set up GCP credentials
 gcloud auth login --upate-adc
+
+# Configure the default project
+gcloud config set project $GCP_PROJECT_ID
 ```
 
 Then run the application (we recommend running it with `-h` or `--help` to get all available options first):
