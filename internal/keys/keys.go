@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strconv"
 	"time"
 
@@ -18,7 +17,6 @@ import (
 
 type Options struct {
 	MaxDays int
-	Redact  bool
 	Format  string
 	Rotate  bool
 }
@@ -50,14 +48,6 @@ func (k Key) ToCSV(options Options) []string {
 func daysSinceCreated(c time.Time) int {
 	const hoursDay = 24
 	return int(time.Since(c).Hours() / hoursDay)
-}
-
-func redact(s string, restr string, mask string) string {
-	re, err := regexp.Compile(restr)
-	if err != nil {
-		log.Println("redact", err.Error())
-	}
-	return re.ReplaceAllString(s, mask)
 }
 
 func List(projectid string) []*Key {
@@ -135,10 +125,6 @@ func Display(keylist []*Key, options Options) {
 		for _, k := range keylist {
 			if k.Rotate {
 				icon = warningIcon
-			}
-			// Redact as many fields as we want from the API Key
-			if options.Redact {
-				k.ProjectId = redact(k.ProjectId, "[a-zA-Z]", "░")
 			}
 			fmt.Println(icon, k.String())
 		}

@@ -14,7 +14,6 @@ func main() {
 	fs := flag.NewFlagSet("apikeycheck", flag.ExitOnError)
 	projectId := fs.String("project", "", "Check API keys in the project identified by ProjectId")
 	maxDays := fs.Int("max-days", 90, "Max. number of days before API keys should be rotated")
-	redact := fs.Bool("redact", false, "Obfuscate information when displaying the Key")
 	format := fs.String("format", "", "Output format for displaying the API keys")
 	rotate := fs.Bool("rotate", false, "Display only API keys older than 'max-days'")
 	if err := fs.Parse(os.Args[1:]); err != nil {
@@ -24,7 +23,6 @@ func main() {
 
 	options := keys.Options{
 		MaxDays: *maxDays,
-		Redact:  *redact,
 		Format:  strings.ToLower(*format),
 		Rotate:  *rotate,
 	}
