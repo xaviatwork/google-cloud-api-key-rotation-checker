@@ -12,10 +12,10 @@ import (
 
 func main() {
 	fs := flag.NewFlagSet("apikeycheck", flag.ExitOnError)
-	projectId := fs.String("project", "", "Check API keys in the project identified by ProjectId")
-	maxDays := fs.Int("max-days", 90, "Max. number of days before API keys should be rotated")
-	format := fs.String("format", "", "Output format for displaying the API keys")
-	rotate := fs.Bool("rotate", false, "Display only API keys older than 'max-days'")
+	projectId := fs.String("project", "", "[optional] Check API keys in the project identified by ProjectId. By default, check all projects the user has access to.")
+	maxDays := fs.Int("max-days", 90, "Max. number of days before API keys should be rotated.")
+	format := fs.String("format", "", "Output format for displaying the API keys. Default (empty) is no format. Supported formats: JSON, CSV")
+	rotate := fs.Bool("rotate", false, "Display only API keys older than 'max-days'.")
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		fmt.Printf("error parsing flags: %s\n", err.Error())
 		os.Exit(1)
