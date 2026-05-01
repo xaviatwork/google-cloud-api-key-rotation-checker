@@ -7,6 +7,7 @@ import (
 
 	resourcemanager "cloud.google.com/go/resourcemanager/apiv3"
 	"cloud.google.com/go/resourcemanager/apiv3/resourcemanagerpb"
+	"google.golang.org/api/iterator"
 )
 
 func Search() []string {
@@ -25,10 +26,15 @@ func Search() []string {
 	}
 
 	var projectLIst []string
-	for project, err := range c.SearchProjects(ctx, req).All() {
+	it := c.SearchProjects(ctx, req)
+	for {
+		project, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
 		if err != nil {
 			fmt.Println("resource manager search project:", project, err.Error())
-			os.Exit(1)
+			continue
 		}
 		projectLIst = append(projectLIst, project.ProjectId)
 	}
