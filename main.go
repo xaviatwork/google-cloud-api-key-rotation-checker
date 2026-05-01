@@ -29,11 +29,10 @@ func main() {
 		Rotate:  *rotate,
 	}
 
-	var projectList []string
-	if *projectId != "" {
-		projectList = []string{*projectId}
+	projectList := []string{*projectId}
+	if *projectId == "" {
+		projectList = projects.Search()
 	}
-	projectList = projects.Search()
 
 	// get API key list
 	var keylist []*keys.Key
@@ -52,6 +51,8 @@ func main() {
 		i = i + 1
 	}
 
+	// filter API keys
+	keylist = keys.Filter(keylist, options)
 	// display API keys
 	keys.Display(keylist, options)
 }

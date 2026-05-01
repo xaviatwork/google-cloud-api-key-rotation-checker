@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"time"
 
 	apikeys "cloud.google.com/go/apikeys/apiv2"
@@ -43,7 +44,7 @@ func (k Key) NeedsToBeRotated(options Options) bool {
 }
 
 func (k Key) ToCSV(options Options) []string {
-	return []string{k.DisplayName, k.Name, k.CreateTime.Format(time.RFC1123), k.ProjectId}
+	return []string{k.DisplayName, k.Name, k.CreateTime.Format(time.RFC1123), k.ProjectId, strconv.Itoa(k.AgeDays), strconv.FormatBool(k.Rotate)}
 }
 
 func daysSinceCreated(c time.Time) int {
@@ -132,7 +133,7 @@ func Display(keylist []*Key, options Options) {
 	default:
 		icon := okIcon
 		for _, k := range keylist {
-			if k.NeedsToBeRotated(options) {
+			if k.Rotate {
 				icon = warningIcon
 			}
 			// Redact as many fields as we want from the API Key
