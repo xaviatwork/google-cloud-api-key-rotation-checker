@@ -38,7 +38,7 @@ func main() {
 	i := 1
 	for _, p := range projectList {
 		fmt.Fprintf(os.Stderr, "🕵️‍♂️ [%d/%d] checking API keys on project %s ...", i, numProjects, p)
-		kk := keys.List(p)
+		kk := keys.List(p, options)
 		if len(kk) == 0 {
 			fmt.Fprintf(os.Stderr, " found 0.\n")
 		} else {

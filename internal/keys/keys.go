@@ -50,7 +50,7 @@ func daysSinceCreated(c time.Time) int {
 	return int(time.Since(c).Hours() / hoursDay)
 }
 
-func List(projectid string) []*Key {
+func List(projectid string, opts Options) []*Key {
 	ctx := context.Background()
 	c, err := apikeys.NewClient(ctx)
 	if err != nil {
@@ -67,7 +67,7 @@ func List(projectid string) []*Key {
 	var keys []*Key
 	for k, err := range c.ListKeys(ctx, req).All() {
 		if err != nil {
-			// TODO: Handle error and break/return/continue. Iteration will stop after any error.
+			// TODO: Handle error and break/return/continue.
 			fmt.Printf("list keys error: %s\n", err.Error())
 			continue
 			// os.Exit(1)
@@ -79,6 +79,7 @@ func List(projectid string) []*Key {
 			ProjectId:   projectid,
 			AgeDays:     daysSinceCreated(k.CreateTime.AsTime()),
 		}
+		key.Rotate = key.NeedsToBeRotated(opts)
 		keys = append(keys, key)
 	}
 
@@ -92,8 +93,7 @@ func Filter(keylist []*Key, options Options) []*Key {
 	}
 	filteredKeys := []*Key{}
 	for _, k := range keylist {
-		if k.NeedsToBeRotated(options) {
-			k.Rotate = true
+		if k.Rotate {
 			filteredKeys = append(filteredKeys, k)
 		}
 	}
